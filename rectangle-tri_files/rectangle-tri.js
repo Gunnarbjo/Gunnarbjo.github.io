@@ -14,13 +14,8 @@ window.onload = function init()
     gl = WebGLUtils.setupWebGL( canvas );
     if ( !gl ) { alert( "WebGL isn't available" ); }
 
-    var vertices = new Float32Array([
-	-0.5, -0.25,
-	0.5, -0.25,
-	-0.5, 0.25,
-	0.5, 0.25,
-
-    ]);
+    var vertices = new Float32Array([-0.5, -0.25, 0.5, 0.25, -0.5, 0.25,
+									 -0.5, -0.25, 0.5, -0.25, 0.5, 0.25]);
 
     //  Configure WebGL
 
@@ -50,5 +45,5 @@ window.onload = function init()
 
 function render() {
     gl.clear( gl.COLOR_BUFFER_BIT );
-    gl.drawArrays( gl.TRIANGLE_STRIP, 0, 4 );
+    gl.drawArrays( gl.TRIANGLES, 0, 6 );
 }
