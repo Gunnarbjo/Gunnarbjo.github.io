@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html ml-update="aware"><link type="text/css" id="dark-mode" rel="stylesheet" href=""><style type="text/css" id="dark-mode-custom-style"></style><head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2D Sierpinski Gasket</title>
+
 <script id="vertex-shader" type="x-shader/x-vertex">
 attribute vec4 vPosition;
 
 void
 main()
 {
+	gl_PointSize = 3.0;
     gl_Position = vPosition;
 }
 </script>
@@ -23,7 +26,8 @@ main()
 
 <script type="text/javascript" src="../supportFiles/webgl-utils.js"></script>
 <script type="text/javascript" src="../supportFiles/initShaders.js"></script>
-<script type="text/javascript" src="../rectangle-tri_files/rectangle-tri.js"></script>
+<script type="text/javascript" src="../supportFiles/MV.js"></script>
+<script type="text/javascript" src="2D%20Sierpinski%20Gasket_files/gasket1.js"></script>
 <link href="data:text/css,%5Bid*%3D'google_ads_iframe'%5D%2C%5Bid*%3D'taboola-'%5D%2C.taboolaHeight%2C.taboola-placeholder%2C%23credential_picker_container%2C%23credentials-picker-container%2C%23credential_picker_iframe%2C%5Bid*%3D'google-one-tap-iframe'%5D%2C%23google-one-tap-popup-container%2C.google-one-tap-modal-div%2C%23amp_floatingAdDiv%2C%23ez-content-blocker-container%2C%23notify-adblock%7Bdisplay%3Anone!important%3Bmin-height%3A0!important%3Bheight%3A0!important%3B%7D" rel="stylesheet" type="text/css"></head>
 
 <body>
