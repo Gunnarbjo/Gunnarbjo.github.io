@@ -1,4 +1,4 @@
-import \* as THREE from './vendor/three/build/three.module.js';
+import * as THREE from './vendor/three/build/three.module.js';
 
 let score = 0;
 let oldPlayerPosition = new THREE.Vector3(); // Initialize with a default position
