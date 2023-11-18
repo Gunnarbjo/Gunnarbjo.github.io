@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Punktljósgjafi með skuggakorti</title> 
+  </head>
+  <body>
+    <!-- Canvas for Rendering the Scene -->
+    <canvas id="c" width="800" height="800"></canvas>
+
+    <!-- Button for Toggling Shadow Map Size -->
+    <button id="toggleShadowSize">Toggle Shadow Map Size</button>
+
+    <!-- External Scripts for Three.js and Related Libraries -->
+    <script src="three.js"></script>
+    <script src="OrbitControls.js"></script>
+    <script src="dat.gui.min.js"></script>
+
+    <script>
+      // Setup Canvas and Renderer
+      const canvas = document.querySelector('#c');
+      const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+      renderer.shadowMap.enabled = true;
+	  renderer.setSize(800, 800);
+
+      // Scene Creation
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color('black');
+
+      // Camera Setup
+	  
+      const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+	  camera.position.set(0, 3, 5);
+
+      // User Interaction - Orbit Controls
+      const controls = new THREE.OrbitControls(camera, canvas);
+
+      // Geometry Creation - Cube, Sphere (Ball), and Plane (Floor)
+      // Cube
+      const geometry = new THREE.BoxGeometry();
+      const material = new THREE.MeshPhongMaterial({color: 0x44aa88});
+      const cube = new THREE.Mesh(geometry, material);
+      cube.castShadow = true;
+      cube.receiveShadow = true;
+      cube.position.x += 1;
+      scene.add(cube);
+
+      // Sphere (Ball)
+      const ballGeometry = new THREE.SphereGeometry(0.5, 20, 20);
+      const ballMaterial = new THREE.MeshPhongMaterial({color: 0xaa8844});
+      const ball = new THREE.Mesh(ballGeometry, ballMaterial);
+      ball.castShadow = true;
+      ball.receiveShadow = true;
+      ball.position.x += -1;
+      ball.position.y = 1;
+      scene.add(ball);
+
+      // Plane (Floor)
+      const planeGeometry = new THREE.PlaneGeometry(20, 20);
+      const planeMaterial = new THREE.MeshPhongMaterial({color: 0xcccccc});
+      const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+      plane.receiveShadow = true;
+      plane.rotation.x = -0.5 * Math.PI;
+      plane.position.set(0, -0.5, 0);
+      scene.add(plane);
+
+      // Lighting Setup - Point Lights
+      const light1 = new THREE.PointLight(0xFFFFFF, 1);
+      light1.castShadow = true;
+      light1.position.set(-1, 1, 0);
+      scene.add(light1);
+
+      const light2 = new THREE.PointLight(0xFFFFFF, 1);
+      light2.castShadow = true;
+      light2.position.set(1, 1, 0);
+      scene.add(light2);
+
+      // Helpers for Light Positions
+      const helper1 = new THREE.PointLightHelper(light1, 0.1);
+      const helper2 = new THREE.PointLightHelper(light2, 0.1);
+      scene.add(helper1);
+      scene.add(helper2);
+
+      // GUI Setup for Light Configuration
+      class ColorGUIHelper {
+		  constructor(object, prop) {
+			  this.object = object;
+			  this.prop = prop;
+		  }
+		  get value() {
+			  return `#${this.object[this.prop].getHexString()}`;
+		  }
+		  set value(hexString) {
+			  this.object[this.prop].set(hexString);
+		  }
+      }
+
+      function makeXYZGUI(gui, vector3, name, onChangeFn) {
+		  const folder = gui.addFolder(name);
+		  folder.add(vector3, 'x', -10, 10).onChange(onChangeFn);
+		  folder.add(vector3, 'y', 0, 10).onChange(onChangeFn);
+		  folder.add(vector3, 'z', -10, 10).onChange(onChangeFn);
+		  folder.open();
+      }
+	  // GUI Setup for Light Configuration
+	  const gui = new dat.GUI();
+
+	  // Adding controls for Light 1
+	  const light1Folder = gui.addFolder('Light 1');
+	  light1Folder.addColor(new ColorGUIHelper(light1, 'color'), 'value').name('color');
+	  light1Folder.add(light1, 'intensity', 0, 2, 0.01);
+	  light1Folder.add(light1, 'distance', 0, 40).onChange(() => { helper1.update(); });
+	  makeXYZGUI(light1Folder, light1.position, 'position');
+
+	  // Adding controls for Light 2
+	  const light2Folder = gui.addFolder('Light 2');
+	  light2Folder.addColor(new ColorGUIHelper(light2, 'color'), 'value').name('color');
+	  light2Folder.add(light2, 'intensity', 0, 2, 0.01);
+	  light2Folder.add(light2, 'distance', 0, 40).onChange(() => { helper2.update(); });
+	  makeXYZGUI(light2Folder, light2.position, 'position');
+      // Ball Movement and Physics
+      let velocity = 0;
+      const gravity = -9.8; // Acceleration due to gravity
+      const initialBounceVelocity = 9.8; // Initial velocity for each bounce
+
+      function moveBall() {
+		  velocity += gravity * 0.016; // Update velocity (assuming 60 FPS)
+		  ball.position.y += velocity * 0.016; // Update position
+
+		  // Check for ground collision
+		  if (ball.position.y <= 0.5) { 
+			  ball.position.y = 0.5;
+			  velocity = initialBounceVelocity; // Reset velocity for continuous bounce
+		  }
+	  }
+	  
+
+	  // Animation Loop
+	  let previousTime = 0;
+	  function animate(time) {
+		  time *= 0.001;  // convert time to seconds
+		  const deltaTime = time - previousTime;
+		  previousTime = time;
+
+		  moveBall(deltaTime);
+		  controls.update();
+		  renderer.render(scene, camera);
+		  requestAnimationFrame(animate);
+	  }
+	  requestAnimationFrame(animate);
+
+	  // Window Resize Handling
+	  function onWindowResize() {
+		  camera.aspect = window.innerWidth / window.innerHeight;
+		  camera.updateProjectionMatrix();
+		  renderer.setSize(window.innerWidth, window.innerHeight);
+	  }
+	  window.addEventListener('resize', onWindowResize, false);
+
+	  // Shadow Map Size Toggle
+	  let isLargeShadowMap = false; // Flag to track shadow map size
+	  function toggleShadowMapSize() {
+		  isLargeShadowMap = !isLargeShadowMap;
+		  const size = isLargeShadowMap ? 1024 : 32;
+
+		  // Update button text
+		  document.getElementById('toggleShadowSize').innerText = `Shadow Map Size: ${size}x${size}`;
+
+		  // Set shadow map size
+		  renderer.shadowMap.size.width = size;
+		  renderer.shadowMap.size.height = size;
+		  light1.shadow.mapSize.width = size;
+		  light1.shadow.mapSize.height = size;
+		  light2.shadow.mapSize.width = size;
+		  light2.shadow.mapSize.height = size;
+
+		  // Update the light shadow maps
+		  light1.shadow.map = null;
+		  light2.shadow.map = null;
+
+		  // Re-render the scene with the new shadow map size
+		  renderer.render(scene, camera);
+	  }
+	  document.getElementById('toggleShadowSize').addEventListener('click', toggleShadowMapSize);
+	</script>
+  </body>
+</html>
